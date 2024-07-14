@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geolocation with Map</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; }
+        body, html { height: 100%; margin: 0; }
+        .alert {
+            position: relative;
+            top: 10px;
+            padding: 10px;
+            background-color: yellow;
+            border: 1px solid black;
+            display: none;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <h1>Geolocation with Map</h1>
+    <div id="alert" class="alert">
+        <span id="alert-text"></span>
+    </div>
+    
+    <p id="location"></p>
+    <div id="map"></div>
+
+    <script>
+        var map;
+        var marker;
+        var hospitals = [
+            {name: "Hospital A", lat: 12.308638163730203, lon: 76.66790754895901},
+            {name: "Hospital B", lat: 12.304006031172424, lon: 76.6814370860143},
+            {name: "Hospital C", lat: 12.301896963463752, lon: 76.64331197999412},
+            {name: "Hospital D", lat: 12.341291571908881, lon: 76.62369489669801},
+            {name: "Hospital E", lat:  12.341412975563898, lon: 76.63103342056276},
+            {name: "Hospital F", lat: 12.338782254678835, lon: 76.63150548934938},
+            {name: "Hospital AA", lat: 12.313380275972943, lon: 76.64973296018442},
+            {name: "Hospital AB", lat: 12.320686147624695, lon: 76.62040636573786},
+            {name: "Hospital AC", lat: 12.316518903856258, lon: 76.62948556448131},
+            {name: "Hospital AD", lat: 12.323287046525705, lon: 76.62715966220144},
+            {name: "Hospital AE", lat: 12.298222826394188, lon: 76.64437955781946},
+            {name: "Hospital AF", lat: 12.29526670735561, lon: 76.6483972709612},
+            {name: "Hospital AG", lat: 12.295948085259571, lon: 76.65525251256156},
+            {name: "Hospital AH", lat: 12.287509357506886, lon: 76.65235629553769},
+            {name: "Hospital AI", lat: 12.28613083153105, lon: 76.65182543786639},
+            {name: "Hospital AJ", lat: 12.288732531160543, lon: 76.64966121239854},
+            {name: "Hospital AK", lat: 12.292247657857436, lon: 76.64229311994542},
+            {name: "Hospital AL", lat: 12.316148958024463, lon: 76.65106367425723},
+            {name: "Hospital AM", lat: 12.314449440626571, lon: 76.65522626978075},
+            {name: "Hospital AN", lat: 12.319313036640223, lon: 76.66368582986051},
+            {name: "Hospital AO", lat: 12.323300410702117, lon: 76.66424767584652},
+            {name: "Hospital AP", lat: 12.291781169686772, lon: 76.63593640891966},
+            {name: "Hospital AQ", lat: 12.283513315720734, lon: 76.6274905704705},
+            {name: "Hospital AR", lat: 12.286314285974948, lon: 76.63093077530945},
+            {name: "Hospital AS", lat: 12.288245070694792, lon: 76.6269106953997},
+            {name: "Hospital AT", lat: 12.288682376487758, lon: 76.62235373178696},
+            {name: "Hospital AU", lat: 12.299660384549444, lon: 76.62375775361951},
+            {name: "Hospital AV", lat: 12.301958941299551, lon: 76.62017225805639},
+        ];
+
+        function initializeMap() {
+            map = L.map('map').setView([12.335679645608362, 76.61934657667628], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 30, // Allow further zooming
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            map.on('click', function(e) {
+                var latitude = e.latlng.lat;
+                var longitude = e.latlng.lng;
+                updateLocation(latitude, longitude);
+            });
+        }
+
+        function updateLocation(latitude, longitude) {
+            document.getElementById("location").innerHTML = 
+                "Latitude: " + latitude +
+                "<br>Longitude: " + longitude;
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            marker = L.marker([latitude, longitude]).addTo(map);
+
+            map.setView([latitude, longitude], 18); // Zoom in further to pinpoint location
+
+            var alertText = ""; // Default alert message
+
+            hospitals.forEach(function(hospital) {
+                var distance = map.distance([latitude, longitude], [hospital.lat, hospital.lon]);
+                if (distance <= 200) {
+                    alertText = "⚠️ You are nearing a hospital! Please don't honk your horns!";
+                }
+            });
+
+            // Check for National Highway alert
+            var nhLatitude = 12.350885826481697;
+            var nhLongitude = 76.66107354265769;
+            var nhDistance = map.distance([latitude, longitude], [nhLatitude, nhLongitude]);
+            if (nhDistance <= 100) {
+                alertText = "⚠️ You're entering a National Highway! Please maintain speed limits...";
+            }
+
+            var alertDiv = document.getElementById("alert");
+
+            document.getElementById("alert-text").innerText = alertText;
+            if (alertText) {
+                alertDiv.style.display = "block";
+            } else {
+                alertDiv.style.display = "none";
+            }
+        }
+
+        window.onload = function() {
+            initializeMap();
+            updateLocation(12.335679645608362, 76.61934657667628);
+        };
+    </script>
+</body>
+</html>
